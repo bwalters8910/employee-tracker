@@ -9,54 +9,66 @@ const connection = mysql.createConnection({
   database: "company_db",
 });
 
+
 const createEmployee = () => {
-  inquirer
-    .prompt([
-      {
-        name: "firstname",
-        type: "input",
-        message: "What is the employee's first name?",
-      },
-      {
-        name: "lastname",
-        type: "input",
-        message: "What is the employee's last name?",
-      },
-      {
-        name: "title",
-        type: "input",
-        message: "What is the employee's title?",
-      },
-      {
-        name: "salary",
-        type: "input",
-        message: "What is the employee's salary?",
-      },
-    ])
-    .then((answer) => {
-      connection.query(
-        "INSERT INTO role SET ?",
-        {
-          title: answer.title,
-          salary: answer.salary,
-        },
-        (err, res) => {
-          if (err) throw err;
-        }
-      );
-      connection.query(
-        "INSERT INTO employee SET ?",
-        {
-          first_name: answer.firstname,
-          last_name: answer.lastname,
-        },
-        (err, res) => {
-          if (err) throw err;
-          console.log(`${res.affectedRows} employee inserted!\n`);
-        }
-      );
-      //   bidAuction();
+  connection.query('SELECT * from role', (err, res) => {
+    connection.query('SELECT * from employee WHERE role_id = manager_id', (err, restwo) => {
+      inquirer
+        .prompt([
+          {
+            name: "firstname",
+            type: "input",
+            message: "What is the employee's first name?",
+          },
+          {
+            name: "lastname",
+            type: "input",
+            message: "What is the employee's last name?",
+          },
+          {
+            name: "roleId",
+            type: "list",
+            message: "What is the employee's role?",
+            choices() {
+              const choiceArray = [];
+              res.forEach(({ id, title }) => {
+                choiceArray.push({ name: title, value: id });
+              });
+              return choiceArray;
+            },
+          },
+          {
+            name: "managerId",
+            type: "list",
+            message: "Who is the employee's manager?",
+            choices() {
+              const choiceArray = [];
+              restwo.forEach(({ id, first_name }) => {
+                choiceArray.push({ name: first_name, value: id });
+              });
+              return choiceArray;
+            },
+          },
+        ])
+        .then((answer) => {
+          console.log(answer);
+          connection.query(
+            "INSERT INTO employee SET ?",
+            {
+              first_name: answer.firstname,
+              last_name: answer.lastname,
+              role_id: answer.roleId,
+              manager_id: answer.managerId,
+            },
+            (err, res) => {
+              if (err) throw err;
+              console.log(`${res.affectedRows} employee inserted!\n`);
+            }
+          );
+          //   bidAuction();
+        });
     });
+  });
 };
 
 
