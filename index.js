@@ -1,6 +1,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 
+
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
@@ -9,6 +10,42 @@ const connection = mysql.createConnection({
   database: "company_db",
 });
 
+const start = () => {
+  inquirer
+    .prompt({
+      name: "input",
+      type: "list",
+      message: "Would you like to view, add, or update employees?",
+      choices: [
+        "VIEW EMPLOYEES",
+        "ADD EMPLOYEE",
+        "UPDATE EMPLOYEE ROLE",
+        "VIEW DEPARTMENTS",
+        "ADD DEPARTMENT",
+        "VIEW ROLES",
+        "ADD ROLE",
+      ],
+    })
+    .then((answer) => {
+      if (answer.input === "ADD EMPLOYEE") {
+        createEmployee();
+      } else if (answer.input === "VIEW EMPLOYEES") {
+        viewEmployees();
+      } else if (answer.input === "UPDATE EMPLOYEE ROLE") {
+        updateEmployee();
+      } else if (answer.input === "VIEW DEPARTMENTS") {
+        viewDepartments();
+      } else if (answer.input === "ADD DEPARTMENT") {
+        createDepartment();
+      } else if (answer.input === "VIEW ROLES") {
+        viewRoles();
+      } else if (answer.input === "ADD ROLE") {
+        createRole();
+      } else {
+        connection.end();
+      }
+    });
+};
 
 const createEmployee = () => {
   connection.query('SELECT * from role', (err, res) => {
@@ -65,16 +102,115 @@ const createEmployee = () => {
               console.log(`${res.affectedRows} employee inserted!\n`);
             }
           );
-          //   bidAuction();
+          start();
         });
     });
   });
 };
 
+const viewEmployees = () => {
+  connection.query('SELECT * FROM employee', (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    start();
+  })
+};
 
+const createDepartment = () => {
+  connection.query("SELECT * from department", (err, res) => {
+        inquirer
+          .prompt([
+            {
+              name: "deptname",
+              type: "input",
+              message: "What department would you like to add?",
+            },
+          ])
+          .then((answer) => {
+            console.log(answer);
+            connection.query(
+              "INSERT INTO department SET ?",
+              {
+                name: answer.deptname,
+              },
+              (err, res) => {
+                if (err) throw err;
+                console.log(`${res.affectedRows} department inserted!\n`);
+              }
+            );
+            start();
+          });
+      }
+    );
+
+};
+
+const viewDepartments = () => {
+  connection.query("SELECT * FROM department", (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+};
+
+const createRole = () => {
+  connection.query("SELECT * from role", (err, res) => {
+    connection.query("SELECT * from department", (err, res) => {
+      inquirer
+        .prompt([
+          {
+            name: "roleName",
+            type: "input",
+            message: "What role would you like to add?",
+          },
+          {
+            name: "salary",
+            type: "input",
+            message: "What salary does this role have?",
+          },
+          {
+            name: "deptId",
+            type: "list",
+            message: "What department does this role serve?",
+            choices() {
+              const choiceArray = [];
+              res.forEach(({ id, name }) => {
+                choiceArray.push({ name: name, value: id });
+              });
+              return choiceArray;
+            },
+          },
+        ])
+        .then((answer) => {
+          console.log(answer);
+          connection.query(
+            "INSERT INTO role SET ?",
+            {
+              title: answer.roleName,
+              salary: answer.salary,
+              department_id: answer.deptId,
+            },
+            (err, res) => {
+              if (err) throw err;
+              console.log(`${res.affectedRows} role inserted!\n`);
+            }
+          );
+          start();
+        });
+    });
+  });
+};
+
+const viewRoles = () => {
+  connection.query("SELECT * FROM role", (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    start();
+  });
+};
 
 connection.connect((err) => {
   if (err) throw err;
   console.log(`connected as id ${connection.threadId}`);
-  createEmployee();
+  start();
 });
