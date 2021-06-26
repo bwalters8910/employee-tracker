@@ -1,6 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-
+const cTable = require("console.table");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -17,6 +17,7 @@ const start = () => {
       type: "list",
       message: "Would you like to view, add, or update employees?",
       choices: [
+        "COMPANY OVERVIEW",
         "VIEW EMPLOYEES",
         "ADD EMPLOYEE",
         "UPDATE EMPLOYEE ROLE",
@@ -42,11 +43,19 @@ const start = () => {
         viewRoles();
       } else if (answer.input === "ADD ROLE") {
         createRole();
-      }
-      else {
+      } else if (answer.input === "COMPANY OVERVIEW") {
+        joinTables();
+      }else {
         connection.end();
       }
     });
+};
+
+const joinTables = () => {
+  connection.query('SELECT employee.first_name, employee.last_name, department.name AS department, role.title, role.salary FROM employee LEFT JOIN role on role.id = employee.role_id LEFT JOIN department ON role.department_id = department.id', (err, res) => {
+    console.table(res);
+    start();
+})
 };
 
 const createEmployee = () => {
@@ -111,7 +120,7 @@ const createEmployee = () => {
 };
 
 const viewEmployees = () => {
-  connection.query('SELECT * FROM employee', (err, res) => {
+  connection.query('SELECT employee.first_name, employee.last_name FROM employee', (err, res) => {
     if (err) throw err;
     console.table(res);
     start();
@@ -170,7 +179,6 @@ const updateEmployeeRole = () => {
   });
 };
 
-
 const createDepartment = () => {
   connection.query("SELECT * from department", (err, res) => {
         inquirer
@@ -201,7 +209,7 @@ const createDepartment = () => {
 };
 
 const viewDepartments = () => {
-  connection.query("SELECT * FROM department", (err, res) => {
+  connection.query("SELECT department.name FROM department", (err, res) => {
     if (err) throw err;
     console.table(res);
     start();
@@ -257,7 +265,7 @@ const createRole = () => {
 };
 
 const viewRoles = () => {
-  connection.query("SELECT * FROM role", (err, res) => {
+  connection.query("SELECT role.title, role.salary, department.name AS department FROM role LEFT JOIN department ON role.department_id = department.id", (err, res) => {
     if (err) throw err;
     console.table(res);
     start();
