@@ -25,6 +25,7 @@ const start = () => {
         "ADD DEPARTMENT",
         "VIEW ROLES",
         "ADD ROLE",
+        "VIEW EMPLOYEES BY MANAGER",
         "EXIT",
       ],
     })
@@ -45,7 +46,9 @@ const start = () => {
         createRole();
       } else if (answer.input === "COMPANY OVERVIEW") {
         joinTables();
-      }else {
+      } else if (answer.input === "VIEW EMPLOYEES BY MANAGER") {
+        viewEmployeeByManager();
+      } else {
         connection.end();
       }
     });
@@ -269,6 +272,41 @@ const viewRoles = () => {
     if (err) throw err;
     console.table(res);
     start();
+  });
+};
+
+const viewEmployeeByManager = () => {
+  connection.query('SELECT * FROM employee WHERE manager_id IS NULL', (err, res) => {
+    inquirer.prompt([
+      {
+        name: "manager",
+        type: "list",
+        message: "What manager would you like to look up?",
+        choices() {
+          const choiceArray = [];
+          res.forEach(({ id, first_name }) => {
+            choiceArray.push({ name: first_name, value: id });
+          });
+          return choiceArray;
+        },
+      }
+    ])
+        .then((answer) => {
+          console.log(answer);
+          connection.query(
+            "SELECT employee.first_name, employee.last_name FROM employee LEFT JOIN role on role.id = employee.role_id WHERE ?",
+            [
+              {
+                manager_id: answer.manager,
+              },
+            ],
+            (err, res) => {
+              if (err) throw err;
+              console.table(res);
+            }
+          );
+          start();
+        })
   });
 };
 
