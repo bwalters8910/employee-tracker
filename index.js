@@ -15,7 +15,7 @@ const start = () => {
     .prompt({
       name: "input",
       type: "list",
-      message: "Would you like to view, add, or update employees?",
+      message: "What would you like to do?",
       choices: [
         "COMPANY OVERVIEW",
         "VIEW EMPLOYEES",
@@ -63,7 +63,7 @@ const joinTables = () => {
 
 const createEmployee = () => {
   connection.query('SELECT * from role', (err, res) => {
-    connection.query('SELECT * from employee WHERE role_id = manager_id', (err, restwo) => {
+    connection.query('SELECT * from employee WHERE manager_id IS NULL', (err, restwo) => {
       inquirer
         .prompt([
           {
