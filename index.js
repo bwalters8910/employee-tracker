@@ -32,7 +32,7 @@ const start = () => {
       } else if (answer.input === "VIEW EMPLOYEES") {
         viewEmployees();
       } else if (answer.input === "UPDATE EMPLOYEE ROLE") {
-        updateEmployee();
+        updateEmployeeRole();
       } else if (answer.input === "VIEW DEPARTMENTS") {
         viewDepartments();
       } else if (answer.input === "ADD DEPARTMENT") {
@@ -115,6 +115,59 @@ const viewEmployees = () => {
     start();
   })
 };
+
+const updateEmployeeRole = () => {
+  connection.query("SELECT * from employee", (err, res) => {
+    connection.query("SELECT * from role", (err, restwo) => {
+      inquirer
+        .prompt([
+          {
+            name: "choiceName",
+            type: "list",
+            message: "What employee would you like to update?",
+            choices() {
+              const choiceArray = [];
+              res.forEach(({ id, first_name }) => {
+                choiceArray.push({ name: first_name, value: id });
+              });
+              return choiceArray;
+            },
+          },
+          {
+            name: "choiceRole",
+            type: "list",
+            message: "What is their new role?",
+            choices() {
+              const choiceArray = [];
+              restwo.forEach(({ id, title }) => {
+                choiceArray.push({ name: title, value: id });
+              });
+              return choiceArray;
+            },
+          },
+        ])
+        .then((answer) => {
+          connection.query(
+            "UPDATE employee SET ? WHERE ?",
+            [
+              {
+                role_id: answer.choiceRole,
+              },
+              {
+                id: answer.choiceName,
+              },
+            ],
+            (err, res) => {
+              if (err) throw err;
+              console.log("role changed");
+            }
+          );
+          start();
+        });
+    });
+  });
+};
+
 
 const createDepartment = () => {
   connection.query("SELECT * from department", (err, res) => {
