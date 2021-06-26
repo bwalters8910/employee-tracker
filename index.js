@@ -24,6 +24,7 @@ const start = () => {
         "ADD DEPARTMENT",
         "VIEW ROLES",
         "ADD ROLE",
+        "EXIT",
       ],
     })
     .then((answer) => {
@@ -41,7 +42,8 @@ const start = () => {
         viewRoles();
       } else if (answer.input === "ADD ROLE") {
         createRole();
-      } else {
+      }
+      else {
         connection.end();
       }
     });
