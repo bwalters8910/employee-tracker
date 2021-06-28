@@ -102,7 +102,6 @@ const createEmployee = () => {
           },
         ])
         .then((answer) => {
-          console.log(answer);
           connection.query(
             "INSERT INTO employee SET ?",
             {
@@ -193,7 +192,6 @@ const createDepartment = () => {
             },
           ])
           .then((answer) => {
-            console.log(answer);
             connection.query(
               "INSERT INTO department SET ?",
               {
@@ -248,7 +246,6 @@ const createRole = () => {
           },
         ])
         .then((answer) => {
-          console.log(answer);
           connection.query(
             "INSERT INTO role SET ?",
             {
@@ -292,7 +289,6 @@ const viewEmployeeByManager = () => {
       }
     ])
         .then((answer) => {
-          console.log(answer);
           connection.query(
             "SELECT employee.first_name, employee.last_name FROM employee LEFT JOIN role on role.id = employee.role_id WHERE ?",
             [
